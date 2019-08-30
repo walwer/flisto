@@ -98,7 +98,7 @@ export default {
 
       tempText = tempText.replace(/pi/g,'Math.PI');
 
-      tempText = tempText.replace(/\((.*?)\-(.*?)\)/, function(a,b,c){
+      tempText = tempText.replace(/\((.*?)[\\\/](.*?)\)/, function(a,b,c){
         c = c.toUpperCase();
         b = b.toUpperCase();
         if(this.currenciesRates.hasOwnProperty(b) && this.currenciesRates.hasOwnProperty(c)){
