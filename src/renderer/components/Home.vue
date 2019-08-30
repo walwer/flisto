@@ -20,12 +20,15 @@
 </template>
 
 <script>
+import axios from 'axios';
+
 export default {
   data() {
     return {
       list: [],
       currentInput: '',
-      fastCalc: ''
+      fastCalc: '',
+      currencies: []
     }
   },
   watch: {
@@ -72,7 +75,16 @@ export default {
     useElement: function(value) {
       this.currentInput += value;
       document.getElementById('mainInput').focus();
+    },
+    updateCurrencies: function(){
+      axios.get('https://api.exchangeratesapi.io/latest')
+        .then((res)=>{
+          console.log(res);
+        })
     }
+  },
+  created() {
+    this.updateCurrencies();
   },
   mounted() {
     window.addEventListener('keyup', function(event) {
