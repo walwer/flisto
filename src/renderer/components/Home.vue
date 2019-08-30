@@ -28,7 +28,8 @@ export default {
       list: [],
       currentInput: '',
       fastCalc: '',
-      currencies: []
+      currenciesRates: [],
+      currenciesNames: []
     }
   },
   watch: {
@@ -61,7 +62,7 @@ export default {
     }
   },
   methods: {
-    addCalculation: function(){
+    addCalculation: function() {
       const dateC = new Date();
 
       if(this.currentInput === '') return;
@@ -76,11 +77,19 @@ export default {
       this.currentInput += value;
       document.getElementById('mainInput').focus();
     },
-    updateCurrencies: function(){
+    updateCurrencies: function() {
       axios.get('https://api.exchangeratesapi.io/latest')
         .then((res)=>{
-          console.log(res);
+          if(res.status===200){
+            this.currenciesRates = res.data.rates;
+            this.parseCurrenciesNames();
+          }
         })
+    },
+    parseCurrenciesNames: function() {
+      for(let currency in this.currenciesRates){
+        this.currenciesNames.push(currency);
+      }
     }
   },
   created() {
