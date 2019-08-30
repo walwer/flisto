@@ -3,12 +3,13 @@
     <div class="draggable-header">
 
     </div>
-    <div class="list">
-      <div class="element" v-for="el in list">
-        <span class="timeTag">{{el.date}}</span>
-        <span class="value" @click="useElement(el.value)">{{el.value}}</span>
-      </div>
-
+    <div class="list" id="list">
+      <transition-group name="slideIn" appear mode="out-in">
+        <div class="element" v-for="el in list" :key="el.value">
+          <span class="timeTag">{{el.date}}</span>
+          <span class="value" @click="useElement(el.value)">{{el.value}}</span>
+        </div>
+    </transition-group>
     </div>
     <div class="fast-calc">
       <p class="fast-calc-text">{{ fastCalc===NaN || fastCalc==='NaN'?'':fastCalc }}</p>
@@ -132,6 +133,21 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.slideIn-enter-active {
+  transition: all .3s ease;
+}
+.slideIn-leave-active {
+  transition: all .3s cubic-bezier(1.0, 0.5, 0.8, 1.0);
+}
+.slideIn-enter, .slide-fade-leave-to
+{
+  transform: translateY(100px);
+  opacity: 0;
+  span {
+    font-size: 0px;
+  }
+}
+
 .home {
   width: 100vw;
   position: relative;
@@ -142,17 +158,17 @@ export default {
   flex-grow: 1;
   height: 100vh;
 
-
   .list {
     flex-grow: 1;
     width: 100%;
     height: 100%;
     display: flex;
     background: #27272A;
-    overflow-y: auto;
+    overflow: scroll;
     padding-top: 20px;
     flex-direction: column;
     justify-content: flex-end;
+    transition: all 0.3s ease;
 
     .element {
       padding: 8px 15px;
