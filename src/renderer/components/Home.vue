@@ -14,7 +14,7 @@
       <p class="fast-calc-text">{{ fastCalc===NaN || fastCalc==='NaN'?'':fastCalc }}</p>
     </div>
     <div class="input-holder">
-        <input type="text" name="" value="" v-model="currentInput" class="input" placeholder="Enter your calc here!" id="mainInput">
+        <input type="text" name="" value="" v-model="currentInput" class="input" placeholder="calc here" id="mainInput">
     </div>
 </div>
 </template>
@@ -27,9 +27,6 @@ export default {
       currentInput: '',
       fastCalc: ''
     }
-  },
-  mounted() {
-    document.getElementById('mainInput').focus();
   },
   watch: {
     currentInput: function(val) {
@@ -74,6 +71,7 @@ export default {
     },
     useElement: function(value) {
       this.currentInput += value;
+      document.getElementById('mainInput').focus();
     }
   },
   mounted() {
@@ -82,6 +80,8 @@ export default {
         this.addCalculation();
       }
     }.bind(this));
+
+    document.getElementById('mainInput').focus();
   }
 }
 </script>
