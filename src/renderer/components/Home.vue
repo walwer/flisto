@@ -29,36 +29,17 @@ export default {
       currentInput: '',
       fastCalc: '',
       currenciesRates: [],
-      currenciesNames: []
+      currenciesNames: [],
+      currencyBase: 'EUR',
+      evalText: ''
     }
   },
   watch: {
+    evalText: function(val){
+      this.fastCalc = eval(val);
+    },
     currentInput: function(val) {
-
-      let tempText = this.currentInput;
-      tempText = tempText.toLowerCase();
-
-
-      //square root
-      tempText = tempText.replace(/sqrt\((.*?)\)/g, function(a,b){
-        return `Math.sqrt(${b})`;
-      });
-
-      tempText = tempText.replace(/sin\((.*?)\)/g, function(a,b){
-        return `Math.sin(${b})`;
-      })
-
-      tempText = tempText.replace(/pow\((.*?),(.*?)\)/g, function(a,b,c){
-        return `Math.pow(${b},${c})`;
-      });
-
-      tempText = tempText.replace(/^([\*\/\-\+])/, function(a,b) {
-        return `${this.list[this.list.length-1].value}${b}`;
-      }.bind(this));
-
-      tempText = tempText.replace(/pi/g,'Math.PI');
-
-      this.fastCalc = eval(tempText);
+      this.calculateInput();
     }
   },
   methods: {
@@ -77,19 +58,62 @@ export default {
       this.currentInput += value;
       document.getElementById('mainInput').focus();
     },
-    updateCurrencies: function() {
-      axios.get('https://api.exchangeratesapi.io/latest')
+    updateCurrencies: function(base=null) {
+      axios.get(`https://api.exchangeratesapi.io/latest?base=EUR`)
         .then((res)=>{
           if(res.status===200){
-            this.currenciesRates = res.data.rates;
-            this.parseCurrenciesNames();
+            this.currenciesRates[res.data.base] = res.data.rates;
+            for(let currency of this.parseCurrenciesNames(res.data.base)) {
+              axios.get(`https://api.exchangeratesapi.io/latest?base=${currency}`)
+                .then((res)=>{
+                  if(res.status===200){
+                    this.currenciesRates[res.data.base] = res.data.rates;
+                  }
+                })
+            }
           }
         })
     },
-    parseCurrenciesNames: function() {
-      for(let currency in this.currenciesRates){
+    calculateInput: function() {
+
+      let tempText = this.currentInput;
+
+      tempText = tempText.toLowerCase();
+
+      tempText = tempText.replace(/sqrt\((.*?)\)/g, function(a,b){
+        return `Math.sqrt(${b})`;
+      });
+
+      tempText = tempText.replace(/sin\((.*?)\)/g, function(a,b){
+        return `Math.sin(${b})`;
+      })
+
+      tempText = tempText.replace(/pow\((.*?),(.*?)\)/g, function(a,b,c){
+        return `Math.pow(${b},${c})`;
+      });
+
+      tempText = tempText.replace(/^([\*\/\-\+])/, function(a,b) {
+        return `${this.list[this.list.length-1].value}${b}`;
+      }.bind(this));
+
+      tempText = tempText.replace(/pi/g,'Math.PI');
+
+      tempText = tempText.replace(/\((.*?)\-(.*?)\)/, function(a,b,c){
+        c = c.toUpperCase();
+        b = b.toUpperCase();
+        if(this.currenciesRates.hasOwnProperty(b) && this.currenciesRates.hasOwnProperty(c)){
+          return `${this.currenciesRates[b][c]}`;
+        }
+
+      }.bind(this));
+
+      this.evalText = tempText;
+    },
+    parseCurrenciesNames: function(base) {
+      for(let currency in this.currenciesRates[base]){
         this.currenciesNames.push(currency);
       }
+      return this.currenciesNames;
     }
   },
   created() {
