@@ -3,14 +3,21 @@
     <div class="draggable-header">
 
     </div>
-    <div class="list" id="list">
-      <transition-group name="slideIn" appear mode="out-in">
-        <div class="element" v-for="el in list" :key="el.value">
-          <span class="timeTag">{{el.date}}</span>
-          <span class="value" @click="useElement(el.value)">{{el.value}}</span>
-        </div>
-    </transition-group>
+    <div class="options-holder">
+      <span @click="clearList">Clear list</span>
     </div>
+
+    <div class="list" id="list" :class="{ 'cleared':listClearFlag }">
+      <transition name="slideDown" mode="out-in" appear>
+          <transition-group name="slideIn" appear mode="out-in" once>
+            <div class="element" v-for="el in list" :key="el.value">
+              <span class="timeTag">{{el.date}}</span>
+              <span class="value" @click="useElement(el.value)">{{el.value}}</span>
+            </div>
+          </transition-group>
+        </transition>
+    </div>
+
     <div class="fast-calc">
       <p class="fast-calc-text">{{ fastCalc===NaN || fastCalc==='NaN'?'':fastCalc }}</p>
     </div>
@@ -32,7 +39,8 @@ export default {
       currenciesRates: [],
       currenciesNames: [],
       currencyBase: 'EUR',
-      evalText: ''
+      evalText: '',
+      listClearFlag: false,
     }
   },
   watch: {
@@ -44,6 +52,14 @@ export default {
     }
   },
   methods: {
+    clearList: function(){
+      this.list = [];
+      this.listClearFlag = true;
+      setTimeout(function() {
+        this.listClearFlag = false;
+      }.bind(this), 200);
+
+    },
     addCalculation: function() {
       const dateC = new Date();
 
@@ -54,6 +70,10 @@ export default {
       });
 
       this.currentInput = '';
+      setTimeout(function(){
+        let list = document.getElementById('list');
+        list.scrollTop = list.scrollHeight;
+      },1);
     },
     useElement: function(value) {
       this.currentInput += value;
@@ -139,13 +159,25 @@ export default {
 .slideIn-leave-active {
   transition: all .3s cubic-bezier(1.0, 0.5, 0.8, 1.0);
 }
-.slideIn-enter, .slide-fade-leave-to
+.slideIn-enter, .slideIn-fade-leave-to
 {
-  transform: translateY(100px);
+  transform: translateX(10px);
   opacity: 0;
   span {
     font-size: 0px;
   }
+}
+
+.slideDown-enter-active {
+  transition: all .3s ease;
+}
+.slideDown-leave-active {
+  transition: all .3s cubic-bezier(1.0, 0.5, 0.8, 1.0);
+}
+.slideDown-enter, .slideDown-fade-leave-to
+{
+    transform: translateY(100px);
+    opacity: 1;
 }
 
 .home {
@@ -158,6 +190,29 @@ export default {
   flex-grow: 1;
   height: 100vh;
 
+  .options-holder {
+    display: flex;
+    position: fixed;
+    top: 0;
+    right: 0;
+    transform: translate(-10px, 30px);
+
+    span {
+      color: #AAA;
+      padding: 5px 8px 3px 8px;
+      font-size: 14px;
+      transition: 0.2s ease;
+      border-radius: 30px;
+      line-height: 15px;
+      cursor: pointer;
+
+      &:hover {
+        color: #FFF;
+        background: #ff6b81;
+      }
+    }
+  }
+
   .list {
     flex-grow: 1;
     width: 100%;
@@ -167,11 +222,22 @@ export default {
     overflow: scroll;
     padding-top: 20px;
     flex-direction: column;
-    justify-content: flex-end;
+    // justify-content: flex-end;
     transition: all 0.3s ease;
+    scroll-behavior: smooth;
+
+    &.cleared {
+      .element {
+        opacity: 0;
+        filter: blur(10px);
+      }
+    }
 
     .element {
       padding: 8px 15px;
+      opacity: 1;
+      filter: none;
+      transition: all 0.2s ease;
     }
 
     .timeTag {
